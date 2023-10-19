@@ -26,6 +26,23 @@ services:
     networks:
       - api-network
 
+  swagger:
+    image: swaggerapi/swagger-ui
+    container_name: swagger-ui
+    ports:
+      - "8080:8080"  # Port sur lequel Swagger UI sera accessible
+    environment:
+      - SWAGGER_JSON=/app/swagger.json  # Le chemin vers votre fichier swagger.json
+    volumes:
+      - ./swagger.json:/app/swagger.json  # Montez votre fichier swagger.json
+
+  grafana:
+    image: grafana/grafana-enterprise
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+     - '3000:3000'
+
 networks:
   api-network:
     driver: bridge
