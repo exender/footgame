@@ -1,4 +1,4 @@
-## FootGame
+## Youtube-Hack
 
 ### 1. API 
 
@@ -9,6 +9,10 @@
 
 Node.js 
 TypeScript
+Docker
+Swagger
+Grafana
+MongoDb
 
 - [] 2. Architecture du projet 
 
@@ -20,9 +24,19 @@ CRUD
 
 
 - [] 4. Description du projet 
-recuperation d'une api de foot 
 
-avec posssibilité de mettre les championnats en favs, joueurs 
-telemetrie des matchs en direct
 
+
+- [] 5. Lancement du projet 
+
+# Partie 1 : API REST 
+```bash 
+npm install
+npm run start
+```
+
+# Partie 2 : Docker 
+```bash
+docker-compose up
+```
 
