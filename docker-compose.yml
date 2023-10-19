@@ -1,0 +1,31 @@
+version: '3'
+services:
+  web:
+    image: node:14 
+    container_name: express-api 
+    working_dir: /app
+    command: npm start
+    volumes:
+      - ./app:/app
+    ports:
+      - "3000:3000" 
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/express-api
+    depends_on:
+      - mongo
+    networks:
+      - api-network
+
+  mongo:
+    image: mongo
+    container_name: mongo-db
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data:/data/db
+    networks:
+      - api-network
+
+networks:
+  api-network:
+    driver: bridge
