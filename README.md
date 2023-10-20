@@ -2,6 +2,10 @@
 
 ### 1. API 
 
+Api permettant de convertir une vidéo youtube en mp4 et de la télécharger. Avec la possibilité de ce connecter en tant que dev et de voir les statistiques de l'api. 
+Avec authentification JWT et Token. 
+Les données sont stockées dans une base de données MongoDb. 
+
 
 ### 2. Point à faire 
 
@@ -21,6 +25,8 @@ CRUD
 
 
 - [] 3. Description des routes
+
+Faire reference au swagger 
 
 
 - [] 4. Description du projet 

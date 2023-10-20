@@ -8,7 +8,7 @@ services:
     volumes:
       - ./app:/app
     ports:
-      - "3000:3000" 
+      - "3030:3030" 
     environment:
       - MONGO_URL=mongodb://mongo:27017/express-api
     depends_on:
@@ -42,6 +42,7 @@ services:
     restart: unless-stopped
     ports:
      - '3000:3000'
+
 
 networks:
   api-network:
