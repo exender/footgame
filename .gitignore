@@ -25,4 +25,5 @@ yarn-error.log*
 # Docker file 
 
 /data 
-.wt
+*.wt
+*.turtle
