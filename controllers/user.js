@@ -1,8 +1,11 @@
-import * as User from '../models/user';
+import User from '../models/user.js';
 
-exports.getUserById = (req, res, next, id) => {
-  User.findById(id).exec((err, user) => {
-    if (err) {
+export const getUserById = async (req, res, next, id) => {
+  console.log('iciii21');
+
+  try {
+    const user = await User.findById(id).exec();
+    if (!user) {
       return res.status(400).json({
         error: "Pas d'utilisateur trouvé dans la base de données",
       });
@@ -10,12 +13,17 @@ exports.getUserById = (req, res, next, id) => {
 
     req.profile = user;
     next();
-  });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Une erreur s'est produite lors de la recherche de l'utilisateur",
+    });
+  }
 };
 
-exports.getUserByName = (req, res, next, name) => {
-  User.findOne({ displayName: name }).exec((err, user) => {
-    if (err || !user) {
+export const getUserByName = async (req, res, next, name) => {
+  try {
+    const user = await User.findOne({ displayName: name }).exec();
+    if (!user) {
       return res.status(400).json({
         error: "Pas d'utilisateur trouvé dans la base de données",
       });
@@ -23,62 +31,76 @@ exports.getUserByName = (req, res, next, name) => {
 
     req.xprofile = user;
     next();
-  });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Une erreur s'est produite lors de la recherche de l'utilisateur",
+    });
+  }
 };
 
-exports.getDataUserByName = (req, res) => {
+export const getDataUserByName = (req, res) => {
   req.xprofile.salt = undefined;
   req.xprofile.encry_password = undefined;
   req.xprofile.verification_code = undefined;
   return res.json(req.xprofile);
 };
 
-exports.getUser = (req, res) => {
+export const getUser = (req, res) => {
   req.profile.salt = undefined;
   req.profile.encry_password = undefined;
   return res.json(req.profile);
 };
 
-exports.updateUser = (req, res) => {
-  User.findByIdAndUpdate(
-    { _id: req.profile._id },
-    { $set: req.body },
-    { new: true, useFindAndModify: false },
-    (err, updatedUser) => {
-      if (err) {
-        return res.status(400).json({
-          error: "Impossible de mettre à jour l'utilisateur",
-        });
-      }
-
-      (updatedUser.salt = undefined), (updatedUser.encry_password = undefined);
-      res.json(updatedUser);
-    }
-  );
-};
-
-exports.getAllUsers = (req, res) => {
-  User.find().exec((err, users) => {
-    if (err) {
+export const updateUser = async (req, res) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      { _id: req.profile._id },
+      { $set: req.body },
+      { new: true, useFindAndModify: false }
+    ).exec();
+    if (!updatedUser) {
       return res.status(400).json({
-        error: "Impossible de récupérer les utilisateurs",
+        error: "Impossible de mettre à jour l'utilisateur",
       });
     }
 
-    res.json(users);
-  });
+    updatedUser.salt = undefined;
+    updatedUser.encry_password = undefined;
+    res.json(updatedUser);
+  } catch (err) {
+    return res.status(400).json({
+      error: "Une erreur s'est produite lors de la mise à jour de l'utilisateur",
+    });
+  }
 };
 
-exports.deleteUser = (req, res) => {
-  User.findByIdAndRemove({ _id: req.profile._id }, (err, deletedUser) => {
-    if (err) {
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().exec();
+    res.json(users);
+  } catch (err) {
+    return res.status(400).json({
+      error: "Impossible de récupérer les utilisateurs",
+    });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const deletedUser = await User.findByIdAndRemove({ _id: req.profile._id }).exec();
+    if (!deletedUser) {
       return res.status(400).json({
         error: "Impossible de supprimer l'utilisateur",
       });
     }
+
     res.json({
       message: "Utilisateur supprimé avec succès",
       deletedUser,
     });
-  });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Une erreur s'est produite lors de la suppression de l'utilisateur",
+    });
+  }
 };

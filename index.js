@@ -1,23 +1,26 @@
 import mongoose from 'mongoose';
-import bodyParser from 'express';
-import cookieParser from 'body-parser';
+import express from 'express';
+import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import 'dotenv/config'
+import { authRoutes } from './routes/auth.js';
+import { userRoutes } from './routes/user.js';
 
 const app = express();
-
-require("dotenv").config();
 
 // DB Connection
 mongoose
   .connect(process.env.MONGODB_URI || process.env.DATABASE, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    useCreateIndex: true,
+    // useCreateIndex: true,
   })
   .then(() => {
     console.log("DB connectée");
   })
-  .catch(() => {
+  .catch((e) => {
+    console.log(e)
     console.log("Database n'est pas connectée");
   });
 
@@ -36,15 +39,9 @@ app.get("/", (req, res) => {
   });
 });
 
-// Importer les routes
-const authRoutes = require("./routes/auth");
-const userRoutes = require("./routes/user");
-const emailSubscriberRoutes = require("./routes/emailsubscriber");
-
 // Use Routes
 app.use("/api", authRoutes);
 app.use("/api", userRoutes);
-app.use("/api", emailSubscriberRoutes);
 
 // PORT
 const port = process.env.PORT || 8000;

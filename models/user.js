@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import crypto  from 'crypto';
-import uuidv1  from 'uuid/v1';
+import uuidv1  from 'uuid/v1.js';
 
 const { ObjectId } = mongoose.Schema;
 
@@ -75,4 +75,4 @@ userSchema.methods = {
   },
 };
 
-module.exports = mongoose.model("User", userSchema);
+export default mongoose.model('User', userSchema);

@@ -1,9 +1,9 @@
-import * as User from '../models/user';
+import User from '../models/user.js';
 import jwt from 'jsonwebtoken';
 import expressJwt from 'express-jwt';
 import { validationResult } from 'express-validator';
 
-exports.apiAuth = (req, res, next) => {
+export const apiAuth = (req, res, next) => {
   if(req.headers['api-key']) {  
     let apiKey = req.headers['api-key']
 
@@ -20,7 +20,7 @@ exports.apiAuth = (req, res, next) => {
   }
 }
 
-exports.signup = (req, res) => {
+export const signup = async (req, res) => {
   const errors = validationResult(req)
 
   if(!errors.isEmpty()) {
@@ -30,73 +30,68 @@ exports.signup = (req, res) => {
   }
 
   const {email} = req.body
-  User.findOne({email}, (err, email) => {
-    if(err || email) {
-      return res.status(403).json({
-        error: "Email déjà utilisé"
-      })
-    }
+  const emailAlreadyUser = await User.findOne({ email: email })
 
-    const user = new User(req.body)
-    user.save((err, user) => {
-      if(err) {
-        return res.status(400).json({
-          error: "Impossible d'ajouter l'utilisateur dans la base de données",
-          err
-        })
-      }
-      res.json({
-        message: "Utilisateur ajouté avec succés",
-        user: {
-          name: user.name,
-          email: user.email,
-          id: user._id
-        }
-      })
+  if(emailAlreadyUser) {
+    return res.status(403).json({
+      error: "Email déjà utilisé"
     })
+  }
+
+  const user = new User(req.body)
+  await user.save()
+
+  res.json({
+    message: "Utilisateur ajouté avec succés",
+    user: {
+      name: user.name,
+      email: user.email,
+      id: user._id
+    }
   })
 }
 
-exports.signin = (req, res) => {
+export const signin = async (req, res) => {
   const {email, password} = req.body
 
-  User.findOne({email}, (err, user) => {
-    if(err || !user) {
-      return res.status(400).json({
-        error: "Email inexistant"
-      })
-    }
+  const user = await User.findOne({ email: email })
 
-    if(!user.authenticate(password)) {
-      return res.status(401).json({
-        error: "Email et mot de passe ne correspondent pas"
-      })
-    }
+  if(!user) {
+    return res.status(403).json({
+      error: "Email inexistant"
+    })
+  }
 
+  if(!user.authenticate(password)) {
+    return res.status(401).json({
+      error: "Email et mot de passe ne correspondent pas"
+    })
+  } else {
     const token = jwt.sign({_id: user._id}, process.env.SECRET)
 
     res.cookie("token", token, { expire: new Date() + 100 })
 
     const { _id, name, email, role } = user
     return res.json({token, user: { _id, name, email, role }})
-  })
+  }
 }
 
 
-exports.signout = (req, res) => {
+export const signout = (req, res) => {
   res.clearCookie("token")
   res.json({
     message: "Utilisateur déconnecté avec succés"
   })
 }
 
-exports.isSignedIn = expressJwt({
+export const isSignedIn = expressJwt({
   secret: process.env.SECRET,
-  userProperty: "auth"
+  userProperty: "auth",
 })
 
-exports.isAuthenticated = (req, res, next) => {
+export const isAuthenticated = (req, res, next) => {
   let checker = req.profile && req.auth && req.profile._id == req.auth._id
+  console.log(req?.profile, req?.auth, req?.profile?._id, req?.auth?._id)
   if(!checker) {
     return res.status(403).json({
       error: "ACCESS DENIED"
@@ -106,7 +101,24 @@ exports.isAuthenticated = (req, res, next) => {
   next()
 }
 
-exports.isAdmin = (req, res, next) => {
+export const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization']
+  // const token = authHeader && authHeader.split(' ')[1]
+
+  console.log(authHeader);
+
+  if (authHeader == null) return res.sendStatus(401)
+
+  jwt.verify(authHeader, process.env.SECRET, (err, user) => {
+    if (err) {
+      return res.sendStatus(401)
+    }
+    req.user = user;
+    next();
+  });
+};
+
+export const isAdmin = (req, res, next) => {
   if(req.profile.role === 0) {
     return res.status(403).json({
       error: "Pas admin, Access Denied"
@@ -116,105 +128,112 @@ exports.isAdmin = (req, res, next) => {
   next()
 }
 
-exports.sendVerificationCode = (req, res) => {
-  const {email} = req.body
-  User.find({email}, (err, user) => {
-    if(err || user.length==0) {
-      return res.status(400).json({
+export const sendVerificationCode = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email }).exec();
+
+    if (!user) {
+      return res.status(403).json({
         error: "Email inexistant"
-      })
+      });
     }
 
-    id = user[0]._id
-    let val = Math.floor(10000 + Math.random() * 9000);
+    const val = Math.floor(10000 + Math.random() * 9000);
 
-    User.findByIdAndUpdate(
-      { _id: id },
-      { $set: {verification_code: val} },
-      { new: true, useFindAndModify: false },
-      (err, user) => {
-        if (err) {
-          return res.status(400).json({
-            error: "Vous ne pouvez pas mettre à jour cet utilisateur"
-          });
-        }
+    const updatedUser = await User.findByIdAndUpdate(
+      { _id: user._id },
+      { $set: { verification_code: val } },
+      { new: true, useFindAndModify: false }
+    ).exec();
 
-        user.salt = undefined;
-        user.encry_password = undefined;
-        res.json({
-          status: "Success",
-          id: user._id,
-          message: "Code de vérification envoyé avec succès"
-        });
-      }
-    );
+    if (!updatedUser) {
+      return res.status(400).json({
+        error: "Vous ne pouvez pas mettre à jour cet utilisateur"
+      });
+    }
 
-  })
-}
+    updatedUser.salt = undefined;
+    updatedUser.encry_password = undefined;
+    
+    res.json({
+      status: "Success",
+      id: updatedUser._id,
+      message: "Code de vérification envoyé avec succès"
+    });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Une erreur s'est produite lors de l'envoi du code de vérification"
+    });
+  }
+};
 
 
-exports.resetPassword = (req, res) => {
-  const {id, verificationCode} = req.body
-  User.findById(id).exec((err, user) => {
-    if(err || !user) {
+export const resetPassword = async (req, res) => {
+  try {
+    const { id, verificationCode, newPassword } = req.body;
+    const user = await User.findById(id).exec();
+
+    if (!user) {
       return res.status(400).json({
         error: "Utilisateur inexistant"
-      })
+      });
     }
 
-    if(verificationCode === null) {
+    if (verificationCode === null) {
       return res.status(400).json({
         error: "S'il vous plaît entrer un code de vérification"
-      })
+      });
     }
 
-    if(user.verification_code !== verificationCode) {
+    if (user.verification_code !== verificationCode) {
       return res.status(400).json({
-        error: "Code de vérifation invalide"
-      })
+        error: "Code de vérification invalide"
+      });
     }
 
-    if(!req.body.newPassword) {
+    if (!newPassword) {
       return res.status(200).json({
         message: "S'il vous plaît entrer un nouveau mot de passe"
-      })
+      });
     }
 
-    const {newPassword} = req.body
-
-    if(newPassword.length < 6) {
+    if (newPassword.length < 6) {
       return res.json({
         error: "Mot de passe doit être au moins 6 caractères"
-      })
+      });
     }
 
-
-    let encryPassword = user.securePassword(newPassword)
-
-    if(encryPassword == user.encry_password) {
+    if (user.securePassword(newPassword) === user.encry_password) {
       return res.json({
         error: "S'il vous plaît entrer un mot de passe différent de l'ancien"
-      })
+      });
     }
 
+    const encryPassword = user.securePassword(newPassword);
 
-    User.findByIdAndUpdate(
+    const updatedUser = await User.findByIdAndUpdate(
       { _id: id },
-      { $set: {verification_code: undefined, encry_password: encryPassword} },
-      { new: true, useFindAndModify: false },
-      (err, user) => {
-        if (err) {
-          return res.status(400).json({
-            error: "Impossible de mettre à jour le mot de passe"
-          });
-        }
+      { $set: { verification_code: undefined, encry_password: encryPassword } },
+      { new: true, useFindAndModify: false }
+    ).exec();
 
-        res.json({
-          status: "Success",
-          id: user._id,
-          message: "Mot de passe changé avec succès"
-        });
-      }
-    );
-  })
-}
+    if (!updatedUser) {
+      return res.status(400).json({
+        error: "Impossible de mettre à jour le mot de passe"
+      });
+    }
+
+    res.json({
+      status: "Success",
+      id: updatedUser._id,
+      message: "Mot de passe changé avec succès"
+    });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Une erreur s'est produite lors de la réinitialisation du mot de passe"
+    });
+  }
+};
+
