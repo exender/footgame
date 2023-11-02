@@ -39,6 +39,11 @@ Créez une base de données MongoDB (facultatif - ou utilisez Robo3T)
    npm start
    ```
 
+# Partie 2 : Docker 
+```bash
+docker-compose up
+```
+
 ## Variables d'environnement
 
 These environment variables will be used for configuring different services by default:
