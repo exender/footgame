@@ -1,14 +1,14 @@
 version: '3'
 services:
   web:
-    image: node:14 
-    container_name: express-api 
+    image: node:14
+    container_name: express-api
     working_dir: /app
     command: npm start
     volumes:
       - ./app:/app
     ports:
-      - "3030:3030" 
+      - "3030:3030"
     environment:
       - MONGO_URL=mongodb://mongo:27017/express-api
     depends_on:
@@ -34,15 +34,14 @@ services:
     environment:
       - SWAGGER_JSON=/app/swagger.json  # Le chemin vers votre fichier swagger.json
     volumes:
-      - ./swagger.json:/app/swagger.json  # Montez votre fichier swagger.json
+      - ./app:/app  # Montez le dossier app pour inclure le fichier swagger.json
 
   grafana:
     image: grafana/grafana-enterprise
     container_name: grafana
     restart: unless-stopped
     ports:
-     - '3000:3000'
-
+      - '3000:3000'
 
 networks:
   api-network:
