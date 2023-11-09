@@ -3,7 +3,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import 'dotenv/config';
+import 'dotenv/config'
 import { authRoutes } from './routes/auth.js';
 import { userRoutes } from './routes/user.js';
 import swaggerJSDoc from 'swagger-jsdoc';
@@ -21,7 +21,7 @@ mongoose
     console.log("DB connectée");
   })
   .catch((e) => {
-    console.log(e);
+    console.log(e)
     console.log("Database n'est pas connectée");
   });
 
@@ -49,13 +49,7 @@ const swaggerOptions = {
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
-// Endpoint pour la documentation Swagger JSON
-app.get('/swagger.json', (req, res) => {
-  res.setHeader('Content-Type', 'application/json');
-  res.send(swaggerSpec);
-});
-
-// Endpoint pour Swagger UI
+// Endpoint pour la documentation Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get("/", (req, res) => {
@@ -70,7 +64,7 @@ app.use("/api", authRoutes);
 app.use("/api", userRoutes);
 
 // PORT
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 8080;
 
 // Start server
 app.listen(port, () => {

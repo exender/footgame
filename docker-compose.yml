@@ -6,11 +6,11 @@ services:
     working_dir: /app
     command: npm start
     volumes:
-      - ./app:/app
+      - ./:/app
     ports:
       - "3030:3030"
     environment:
-      - MONGO_URL=mongodb://mongo:27017/express-api
+      - DATABASE_URI=${DATABASE}
     depends_on:
       - mongo
     networks:
