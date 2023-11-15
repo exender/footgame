@@ -7,6 +7,7 @@ import 'dotenv/config'
 import { authRoutes } from './routes/auth.js';
 import { userRoutes } from './routes/user.js';
 import { youtubeRoutes } from './routes/youtube.js';
+import { paymentRoutes } from './routes/payment.js';
 
 const app = express();
 
@@ -44,6 +45,7 @@ app.get("/", (req, res) => {
 app.use("/api", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api", youtubeRoutes);
+app.use("/api", paymentRoutes);
 
 // PORT
 const port = process.env.PORT || 8000;
