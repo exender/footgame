@@ -1,8 +1,6 @@
 import User from '../models/user.js';
 
 export const getUserById = async (req, res, next, id) => {
-  console.log('iciii21');
-
   try {
     const user = await User.findById(id).exec();
     if (!user) {

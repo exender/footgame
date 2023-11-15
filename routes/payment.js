@@ -1,9 +1,10 @@
 import express from 'express';
 
-import { payment } from '../controllers/payment.js';
+import { payment, successPayment } from '../controllers/payment.js';
 
 const router = express.Router();
 
 router.post("/payment", payment);
+router.get("/success", successPayment);
 
 export { router as paymentRoutes }
