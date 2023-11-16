@@ -1,7 +1,13 @@
+import e from 'express';
 import * as fs from 'fs';
 import ytdl from 'ytdl-core';
 
-export const youtubeConversion = async (req, res) => {
+interface RequestBody {
+  url: string;
+  folder: string;
+}
+
+export const youtubeConversion = async (req: any, res: any) => {
   try {
     const { url, folder } = req.body;
 
@@ -24,11 +30,11 @@ export const youtubeConversion = async (req, res) => {
       });
     });
     
-    videoStream.on('error', (error) => {
+    videoStream.on('error', (error: Error) => {
       throw error;
     });
-  } catch (error) {
-    console.error('Erreur lors de la conversion :', error.message);
+  } catch (error: any) {
+    console.error('Erreur lors de la conversion :', error.message, error);
 
     if (error.message === 'Les paramètres "url" et "folder" sont requis.') {
       res.status(400).json({ error: error.message });

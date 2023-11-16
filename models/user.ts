@@ -1,10 +1,26 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 import crypto from 'crypto';
-import uuidv1 from 'uuid/v1.js';
+import { v1 as uuidv1 } from 'uuid';
 
-const { ObjectId } = mongoose.Schema;
+export interface User extends Document {
+  firstname: string;
+  lastname: string;
+  aboutme?: string;
+  email: string;
+  verification_code?: number;
+  encry_password: string;
+  salt: string;
+  role: number;
+  apiKey?: string;
+  password: string;
+  authenticate(plainpassword: string): boolean;
+  securePassword(plainpassword: string): string;
+  generateApiKey(): string;
+  _password: string;
+  name: string;
+}
 
-const userSchema = new mongoose.Schema(
+const userSchema: Schema<User> = new mongoose.Schema(
   {
     firstname: {
       type: String,
@@ -52,21 +68,21 @@ const userSchema = new mongoose.Schema(
 
 userSchema
   .virtual('password')
-  .set(function (password) {
+  .set(function (this: User, password: string) {
     this._password = password;
     this.salt = uuidv1();
     this.encry_password = this.securePassword(password);
   })
-  .get(function () {
+  .get(function (this: User) {
     return this._password;
   });
 
 userSchema.methods = {
-  authenticate: function (plainpassword) {
+  authenticate: function (this: User, plainpassword: string) {
     return this.securePassword(plainpassword) === this.encry_password;
   },
 
-  securePassword: function (plainpassword) {
+  securePassword: function (this: User, plainpassword: string) {
     if (!plainpassword) return '';
     try {
       return crypto
@@ -78,17 +94,16 @@ userSchema.methods = {
     }
   },
 
-  generateApiKey: function () {
+  generateApiKey: function (this: User) {
     return uuidv1();
   },
 };
 
-// Avant de sauvegarder un nouvel utilisateur, générez une clé API
-userSchema.pre('save', function (next) {
+userSchema.pre<User>('save', function (next) {
   if (!this.apiKey) {
     this.apiKey = this.generateApiKey();
   }
   next();
 });
 
-export default mongoose.model('User', userSchema);
+export default mongoose.model<User>('User', userSchema);

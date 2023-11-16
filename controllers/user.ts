@@ -1,6 +1,7 @@
-import User from '../models/user.js';
+import { Request, Response } from 'express';
+import User from '../models/user';
 
-export const getUserById = async (req, res, next, id) => {
+export const getUserById = async (req: any, res: any, next: any, id: string) => {
   try {
     const user = await User.findById(id).exec();
     if (!user) {
@@ -18,8 +19,8 @@ export const getUserById = async (req, res, next, id) => {
   }
 };
 
-export const getUserByName = async (req, res, next, name) => {
-  try {
+export const getUserByName = async (req: any, res: any, next: any, name: string) => {
+    try {
     const user = await User.findOne({ displayName: name }).exec();
     if (!user) {
       return res.status(400).json({
@@ -36,22 +37,22 @@ export const getUserByName = async (req, res, next, name) => {
   }
 };
 
-export const getDataUserByName = (req, res) => {
+export const getDataUserByName = (req: any, res: any) => {
   req.xprofile.salt = undefined;
   req.xprofile.encry_password = undefined;
   req.xprofile.verification_code = undefined;
   return res.json(req.xprofile);
 };
 
-export const getUser = (req, res) => {
+export const getUser = (req: any, res: any) => {
   req.profile.salt = undefined;
   req.profile.encry_password = undefined;
   return res.json(req.profile);
 };
 
-export const updateUser = async (req, res) => {
+export const updateUser = async (req: any, res: any): Promise<void> => {
   try {
-    const updatedUser = await User.findByIdAndUpdate(
+    const updatedUser: any = await User.findByIdAndUpdate(
       { _id: req.profile._id },
       { $set: req.body },
       { new: true, useFindAndModify: false }
@@ -72,7 +73,7 @@ export const updateUser = async (req, res) => {
   }
 };
 
-export const getAllUsers = async (req, res) => {
+export const getAllUsers = async (req: any, res: any) => {
   try {
     const users = await User.find().exec();
     res.json(users);
@@ -83,7 +84,7 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-export const deleteUser = async (req, res) => {
+export const deleteUser = async (req: any, res: any) => {
   try {
     const deletedUser = await User.findByIdAndRemove({ _id: req.profile._id }).exec();
     if (!deletedUser) {
