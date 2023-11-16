@@ -144,7 +144,7 @@ import express from 'express';
 import { check, validationResult } from 'express-validator';
 import uuid from 'uuid';
 import User from '../models/user.js';
-import { rateLimit } from 'express-rate-limit';
+import expressRateLimit from 'express-rate-limit';
 import {
   signup,
   signin,
@@ -162,10 +162,16 @@ const generateApiKey = () => {
   return uuid.v4();
 };
 
-
+// Middleware de limitation de taux pour la création de compte
+const createAccountLimiter = expressRateLimit({
+  windowMs: 60 * 60 * 1000, // 1 heure en millisecondes
+  max: 3, // 1 requête par fenêtre de temps
+  message: "Vous avez dépassé la limite de création de compte. Veuillez réessayer plus tard.",
+});
 
 router.post(
   "/signup",
+  createAccountLimiter,
   apiAuth,
   [
     check("firstname", "FirstName doit avoir minimum 3 caractères").isLength({
@@ -232,18 +238,4 @@ router.put("/sendverificationcode", apiAuth, sendVerificationCode);
 router.put("/resetpassword", apiAuth, resetPassword);
 
 router.get("/signout", apiAuth, signout);
-
-
-
-
-/* Code Rate limiter*/
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
-  standardHeaders: 'draft-7', // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
-  // store: ... , // Use an external store for consistency across multiple server instances.
-})
-
-
 router.post;
