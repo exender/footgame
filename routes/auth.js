@@ -1,7 +1,7 @@
 import express from 'express';
-const router = express.Router();
-import { check } from 'express-validator';
-// import { reset } from 'nodemon';
+import { check, validationResult } from 'express-validator';
+import uuid from 'uuid';
+import User from '../models/user.js';
 import {
   signup,
   signin,
@@ -10,6 +10,13 @@ import {
   sendVerificationCode,
   resetPassword,
 } from '../controllers/auth.js';
+
+const router = express.Router();
+
+// Fonction pour générer une clé API unique
+const generateApiKey = () => {
+  return uuid.v4();
+};
 
 router.post(
   "/signup",
@@ -26,7 +33,41 @@ router.post(
       min: 6,
     }),
   ],
-  signup
+  async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(402).json({
+        error: errors.array()[0].msg,
+      });
+    }
+
+    const { email, password, firstname, lastname } = req.body;
+
+    // Génération de la clé API unique
+    const apiKey = generateApiKey();
+
+    const user = new User({
+      email,
+      password,
+      firstname,
+      lastname,
+      apiKey, // Ajoutez la clé API à l'utilisateur
+    });
+
+    await user.save();
+
+    res.json({
+      message: 'Utilisateur ajouté avec succès',
+      user: {
+        id: user._id,
+        email: user.email,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        apiKey: user.apiKey, // Incluez la clé API dans la réponse
+      },
+    });
+  }
 );
 
 router.post(

@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
-import crypto  from 'crypto';
-import uuidv1  from 'uuid/v1.js';
+import crypto from 'crypto';
+import uuidv1 from 'uuid/v1.js';
 
 const { ObjectId } = mongoose.Schema;
 
@@ -42,12 +42,16 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    apiKey: {
+      type: String,
+      unique: true,
+    },
   },
   { timestamps: true }
 );
 
 userSchema
-  .virtual("password")
+  .virtual('password')
   .set(function (password) {
     this._password = password;
     this.salt = uuidv1();
@@ -63,16 +67,28 @@ userSchema.methods = {
   },
 
   securePassword: function (plainpassword) {
-    if (!plainpassword) return "";
+    if (!plainpassword) return '';
     try {
       return crypto
-        .createHmac("sha256", this.salt)
+        .createHmac('sha256', this.salt)
         .update(plainpassword)
-        .digest("hex");
+        .digest('hex');
     } catch (err) {
-      return "";
+      return '';
     }
   },
+
+  generateApiKey: function () {
+    return uuidv1();
+  },
 };
+
+// Avant de sauvegarder un nouvel utilisateur, générez une clé API
+userSchema.pre('save', function (next) {
+  if (!this.apiKey) {
+    this.apiKey = this.generateApiKey();
+  }
+  next();
+});
 
 export default mongoose.model('User', userSchema);
