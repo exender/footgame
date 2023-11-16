@@ -238,3 +238,5 @@ router.put("/resetpassword", apiAuth, resetPassword);
 
 router.get("/signout", apiAuth, signout);
 router.post;
+
+export { router as authRoutes }
