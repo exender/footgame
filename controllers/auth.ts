@@ -1,9 +1,9 @@
-import User from '../models/user.js';
+import { Request, Response, NextFunction } from 'express';
+import User from '../models/user';
 import jwt from 'jsonwebtoken';
-import expressJwt from 'express-jwt';
 import { validationResult } from 'express-validator';
 
-export const apiAuth = (req, res, next) => {
+export const apiAuth = (req: Request, res: Response, next: NextFunction) => {
   if(req.headers['api-key']) {  
     let apiKey = req.headers['api-key']
 
@@ -19,77 +19,81 @@ export const apiAuth = (req, res, next) => {
     })
   }
 }
-
-export const signup = async (req, res) => {
-  const errors = validationResult(req)
-
-  if(!errors.isEmpty()) {
-    return res.status(402).json({
-      error: errors.array()[0].msg
-    })
-  }
-
-  const {email} = req.body
-  const emailAlreadyUser = await User.findOne({ email: email })
-
-  if(emailAlreadyUser) {
-    return res.status(403).json({
-      error: "Email déjà utilisé"
-    })
-  }
-
-  const user = new User(req.body)
-  await user.save()
-
-  res.json({
-    message: "Utilisateur ajouté avec succés",
-    user: {
-      name: user.name,
-      email: user.email,
-      id: user._id
+  
+  export const signup = async (req: Request, res: Response): Promise<void> => {
+    const errors = validationResult(req);
+  
+    if (!errors.isEmpty()) {
+      res.status(402).json({
+        error: errors.array()[0].msg
+      });
+      return;
     }
-  })
-}
+  
+    const { email } = req.body;
+    const emailAlreadyUser = await User.findOne({ email: email });
+  
+    if (emailAlreadyUser) {
+      res.status(403).json({
+        error: "Email déjà utilisé"
+      });
+      return;
+    }
+  
+    const user = new User(req.body);
+    await user.save();
+  
+    res.json({
+      message: "Utilisateur ajouté avec succés",
+      user: {
+        name: user.name,
+        email: user.email,
+        id: user._id
+      }
+    });
+  }
 
-export const signin = async (req, res) => {
-  const {email, password} = req.body
+export const signin = async (req: Request, res: any): Promise<void> => {
+  const { email, password }: { email: string, password: string } = req.body;
 
-  const user = await User.findOne({ email: email })
+  const user: any = await User.findOne({ email: email });
 
-  if(!user) {
-    return res.status(403).json({
+  if (!user) {
+    res.status(403).json({
       error: "Email inexistant"
-    })
+    });
+    return;
   }
 
-  if(!user.authenticate(password)) {
-    return res.status(401).json({
+  if (!user.authenticate(password)) {
+    res.status(401).json({
       error: "Email et mot de passe ne correspondent pas"
-    })
+    });
+    return;
   } else {
-    const token = jwt.sign({_id: user._id}, process.env.SECRET)
+    const token: string = jwt.sign({ _id: user._id }, `${process.env.SECRET}`);
 
-    res.cookie("token", token, { expire: new Date() + 100 })
+    res.cookie("token", token, { expire: new Date() });
 
-    const { _id, name, email, role } = user
-    return res.json({token, user: { _id, name, email, role }})
+    const { _id, name, email, role }: { _id: string, name: string, email: string, role: string } = user;
+    res.json({ token, user: { _id, name, email, role } });
   }
 }
 
 
-export const signout = (req, res) => {
+export const signout = (req: Request, res: Response) => {
   res.clearCookie("token")
   res.json({
     message: "Utilisateur déconnecté avec succés"
   })
 }
 
-export const isSignedIn = expressJwt({
-  secret: process.env.SECRET,
-  userProperty: "auth",
-})
+// export const isSignedIn = expressJwt({
+//   secret: process.env.SECRET,
+//   userProperty: "auth",
+// })
 
-export const isAuthenticated = (req, res, next) => {
+export const isAuthenticated = (req: any, res: Response, next: NextFunction) => {
   let checker = req.profile && req.auth && req.profile._id == req.auth._id
   if(!checker) {
     return res.status(403).json({
@@ -100,14 +104,14 @@ export const isAuthenticated = (req, res, next) => {
   next()
 }
 
-export const authenticateToken = (req, res, next) => {
+export const authenticateToken = (req: any, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization']
 
   console.log(authHeader);
 
   if (authHeader == null) return res.sendStatus(401)
 
-  jwt.verify(authHeader, process.env.SECRET, (err, user) => {
+  jwt.verify(authHeader, `${process.env.SECRET}`, (err: any, user: any) => {
     if (err) {
       return res.sendStatus(401)
     }
@@ -116,7 +120,7 @@ export const authenticateToken = (req, res, next) => {
   });
 };
 
-export const isAdmin = (req, res, next) => {
+export const isAdmin = (req: any, res: Response, next: NextFunction) => {
   if(req.profile.role === 0) {
     return res.status(403).json({
       error: "Pas admin, Access Denied"
@@ -126,7 +130,7 @@ export const isAdmin = (req, res, next) => {
   next()
 }
 
-export const sendVerificationCode = async (req, res) => {
+export const sendVerificationCode = async (req: any, res: Response) => {
   try {
     const { email } = req.body;
 
@@ -140,7 +144,7 @@ export const sendVerificationCode = async (req, res) => {
 
     const val = Math.floor(10000 + Math.random() * 9000);
 
-    const updatedUser = await User.findByIdAndUpdate(
+    const updatedUser: any = await User.findByIdAndUpdate(
       { _id: user._id },
       { $set: { verification_code: val } },
       { new: true, useFindAndModify: false }
@@ -168,7 +172,7 @@ export const sendVerificationCode = async (req, res) => {
 };
 
 
-export const resetPassword = async (req, res) => {
+export const resetPassword = async (req: Request, res: Response) => {
   try {
     const { id, verificationCode, newPassword } = req.body;
     const user = await User.findById(id).exec();

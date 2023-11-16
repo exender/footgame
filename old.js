@@ -4,10 +4,10 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import 'dotenv/config'
-import { authRoutes } from './routes/auth.js';
-import { userRoutes } from './routes/user.js';
-import { youtubeRoutes } from './routes/youtube.js';
-import { paymentRoutes } from './routes/payment.js';
+import { authRoutes } from './routes/auth.ts';
+import { userRoutes } from './routes/user.ts';
+import { youtubeRoutes } from './routes/youtube.ts';
+import { paymentRoutes } from './routes/payment.ts';
 
 const app = express();
 

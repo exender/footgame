@@ -1,7 +1,7 @@
 import express from 'express';
 import { check, validationResult } from 'express-validator';
 import uuid from 'uuid';
-import User from '../models/user.js';
+import User from '../models/user';
 import {
   signup,
   signin,
@@ -9,7 +9,7 @@ import {
   apiAuth,
   sendVerificationCode,
   resetPassword,
-} from '../controllers/auth.js';
+} from '../controllers/auth';
 
 const router = express.Router();
 
@@ -33,7 +33,7 @@ router.post(
       min: 6,
     }),
   ],
-  async (req, res) => {
+  async (req: any, res: any) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -52,7 +52,7 @@ router.post(
       password,
       firstname,
       lastname,
-      apiKey, // Ajoutez la clé API à l'utilisateur
+      apiKey,
     });
 
     await user.save();
@@ -64,7 +64,7 @@ router.post(
         email: user.email,
         firstname: user.firstname,
         lastname: user.lastname,
-        apiKey: user.apiKey, // Incluez la clé API dans la réponse
+        apiKey: user.apiKey,
       },
     });
   }

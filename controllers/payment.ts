@@ -1,8 +1,8 @@
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
 
-export const payment = async (req, res) => {
+export const payment = async (req: any, res: any): Promise<void> => {
   try {
     const session = await stripe.checkout.sessions.create({
       line_items: [
@@ -22,11 +22,11 @@ export const payment = async (req, res) => {
   }
 };
 
-export const successPayment = async (req, res) => {
+export const successPayment = async (req: any, res: any): Promise<void> => {
   try {
-    let key = '';
+    let key: string = '';
     if (req.query.sessionId) {
-      key = process.env.API_KEY;
+      key = process.env.API_KEY || '';
     }
     console.log('api_key', key);
     res.json({ api_key: key });
@@ -35,7 +35,7 @@ export const successPayment = async (req, res) => {
     res.status(500).json({ error: 'Erreur lors du traitement de la réponse de paiement réussi' });
   }
 };
-export const paymentLink = async (req, res) => {
 
-  res.json({ link_to_pay: 'https://buy.stripe.com/test_5kA7ve11X4q59DW4gh' }); 
-}; 
+export const paymentLink = async (req: any, res: any): Promise<void> => {
+  res.json({ link_to_pay: 'https://buy.stripe.com/test_5kA7ve11X4q59DW4gh' });
+};

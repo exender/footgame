@@ -1,12 +1,10 @@
 import express from 'express';
 import {
-  isSignedIn,
-  isAuthenticated,
   isAdmin,
   apiAuth,
   authenticateToken,
   // contactEmail,
-} from '../controllers/auth.js';
+} from '../controllers/auth';
 import {
   getUserById,
   getUser,
@@ -16,7 +14,7 @@ import {
   getDataUserByName,
   getUserByName,
   // updateSocial,
-} from '../controllers/user.js';
+} from '../controllers/user';
 const router = express();
 
 router.param("userId", getUserById);
