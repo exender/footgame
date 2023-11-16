@@ -144,6 +144,7 @@ import express from 'express';
 import { check, validationResult } from 'express-validator';
 import uuid from 'uuid';
 import User from '../models/user.js';
+import { rateLimit } from 'express-rate-limit';
 import {
   signup,
   signin,
@@ -152,6 +153,7 @@ import {
   sendVerificationCode,
   resetPassword,
 } from '../controllers/auth.js';
+export { router as authRoutes }
 
 const router = express.Router();
 
@@ -160,7 +162,7 @@ const generateApiKey = () => {
   return uuid.v4();
 };
 
-import { rateLimit } from 'express-rate-limit';
+
 
 router.post(
   "/signup",
@@ -231,9 +233,8 @@ router.put("/resetpassword", apiAuth, resetPassword);
 
 router.get("/signout", apiAuth, signout);
 
-export { router as authRoutes }
 
-router.post;
+
 
 /* Code Rate limiter*/
 const limiter = rateLimit({
@@ -244,5 +245,5 @@ const limiter = rateLimit({
   // store: ... , // Use an external store for consistency across multiple server instances.
 })
 
-// Apply the rate limiting middleware to all requests.
-app.use(limiter)
+
+router.post;

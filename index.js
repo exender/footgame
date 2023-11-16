@@ -68,7 +68,7 @@ app.use("/api", youtubeRoutes);
 app.use("/api", paymentRoutes);
 
 // PORT
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 8081;
 
 // Start server
 app.listen(port, () => {
