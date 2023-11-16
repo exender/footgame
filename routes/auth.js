@@ -105,7 +105,41 @@
  *     responses:
  *       200:
  *         description: Utilisateur déconnecté avec succès
- */
+
+ * /updatepassword:
+ *   put:
+ *     summary: Modification du mot de passe de l'utilisateur
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               oldPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *             example:
+ *               oldPassword: password123
+ *               newPassword: newpassword123
+ *     responses:
+ *       200:
+ *         description: Mot de passe modifié avec succès
+
+ * /deleteaccount:
+ *   delete:
+ *     summary: Suppression du compte de l'utilisateur
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Compte utilisateur supprimé avec succès
+  */
 import express from 'express';
 const router = express.Router();
 import { check } from 'express-validator';
