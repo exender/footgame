@@ -23,9 +23,12 @@
     "formidable": "^3.5.1",
     "i": "^0.3.6",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^7.6.3",
+    "mongoose": "^7.6.4",
     "nodemon": "^1.19.4",
     "npm": "^10.2.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0",
+    "uuid": "^3.3.3"
     "stripe": "^14.4.0",
     "uuid": "^3.3.3",
     "ytdl-core": "^4.11.5"

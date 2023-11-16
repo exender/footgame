@@ -68,3 +68,38 @@ These environment variables will be used for configuring different services by d
 | /api/users/:userId           |     GET    | Get all Users(only admin)       | None    |
 
 Add `api-key` in header of request and `authorization` in header for routes protected (it's the cookie when you signin).
+
+# Partie 2 : Docker 
+
+Pour exécuter l'API REST avec Docker, vous pouvez utiliser le fichier `docker-compose.yml` fourni. Il contient les services suivants :
+
+* `mongo` : une instance MongoDB
+* `app` : l'application Node.js
+
+## Prérequis
+
+* Docker doit être installé sur votre machine.
+
+## Utilisation
+
+1. Clonez le référentiel et accédez au dossier racine.
+2. Exécutez la commande suivante pour créer et démarrer les conteneurs :
+
+   ```bash
+   docker-compose up
+   ```
+
+   Cette commande va créer et démarrer les conteneurs pour MongoDB et l'application Node.js.
+
+3. Accédez à l'API REST à l'adresse `http://localhost:3000`.
+
+## Configuration
+
+Le fichier `docker-compose.yml` contient les variables d'environnement suivantes :
+
+* `DATABASE` : l'URL de la base de données MongoDB. Par défaut, il est défini sur `mongodb://mongo:27017/auth`.
+* `SECRET` : la clé secrète utilisée pour générer les jetons d'authentification. Par défaut, il est défini sur `mysecretkey`.
+* `API_KEY` : la clé API utilisée pour authentifier les demandes à l'API REST. Par défaut, il est défini sur `myapikey`.
+
+Vous pouvez modifier ces variables d'environnement en modifiant le fichier `docker-compose.yml`.
+
