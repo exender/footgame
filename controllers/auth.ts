@@ -3,6 +3,24 @@ import User from '../models/user';
 import jwt from 'jsonwebtoken';
 import { validationResult } from 'express-validator';
 
+interface User {
+  firstname: string;
+  lastname: string;
+  aboutme?: string;
+  email: string;
+  verification_code?: number;
+  encry_password: string;
+  salt: string;
+  role: number;
+  apiKey?: string;
+  password: string;
+  authenticate(plainpassword: string): boolean;
+  securePassword(plainpassword: string): string;
+  generateApiKey(): string;
+  _password: string;
+  name: string;
+}
+
 export const apiAuth = (req: Request, res: Response, next: NextFunction) => {
   if(req.headers['api-key']) {  
     let apiKey = req.headers['api-key']
@@ -56,7 +74,7 @@ export const apiAuth = (req: Request, res: Response, next: NextFunction) => {
 export const signin = async (req: Request, res: any): Promise<void> => {
   const { email, password }: { email: string, password: string } = req.body;
 
-  const user: any = await User.findOne({ email: email });
+  const user: User | any = await User.findOne({ email: email });
 
   if (!user) {
     res.status(403).json({
@@ -111,7 +129,7 @@ export const authenticateToken = (req: any, res: Response, next: NextFunction) =
 
   if (authHeader == null) return res.sendStatus(401)
 
-  jwt.verify(authHeader, `${process.env.SECRET}`, (err: any, user: any) => {
+  jwt.verify(authHeader, `${process.env.SECRET}`, (err: any, user: User | any) => {
     if (err) {
       return res.sendStatus(401)
     }
@@ -144,7 +162,7 @@ export const sendVerificationCode = async (req: any, res: Response) => {
 
     const val = Math.floor(10000 + Math.random() * 9000);
 
-    const updatedUser: any = await User.findByIdAndUpdate(
+    const updatedUser: User | any = await User.findByIdAndUpdate(
       { _id: user._id },
       { $set: { verification_code: val } },
       { new: true, useFindAndModify: false }
@@ -162,7 +180,8 @@ export const sendVerificationCode = async (req: any, res: Response) => {
     res.json({
       status: "Success",
       id: updatedUser._id,
-      message: "Code de vérification envoyé avec succès"
+      message: "Code de vérification envoyé avec succès",
+      verification_code: updatedUser.verification_code
     });
   } catch (err) {
     return res.status(400).json({
